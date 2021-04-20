@@ -1,16 +1,22 @@
-from torch import nn
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.layers import Activation
 
-class srcnnModel(nn.Module):
-	def __init__(self, num_channels=1, kernel_size_l1 = 9, kernel_size_l2=5, kernel_size_l3=5):
-		super(srcnnModel, self).__init__()
-		self.layer1 = nn.Conv2d(num_channels, 64, kernel_size=kernel_size_l1, padding = kernel_size_l1//2)
-		self.layer2 = nn.Conv2d(64, 32, kernel_size=kernel_size_l2, padding = kernel_size_l2//2)
-		self.layer3 = nn.Conv2d(32, num_channels, kernel_size=kernel_size_l3, padding = kernel_size_l3//2)
-		self.relu = nn.Relu(inplace=True)
-
-	def forward(self, x):
-		x = self.relu(self.layer1(x))
-		x = self.relu(self.layer2(x))
-		x = self.layer3(x)
+class srcnn(Model):
+	def __init__(self, img_size, classes, optimizer, loss, metric = ['accuracy']):
+		super(srcnn, self).__init__()
+		self.img_size = img_size
+		self.classes = classes
+		self.optimizer = optimizer
+		self.metric = metric
+		
+		self.conv1 = Conv2D(64,9,padding='same', input_shape = (self.img_size, self.img_size, self.classes), activation='relu')
+		self.conv2 = Conv2D(32,1,padding='same', activation='relu')
+		self.conv3 = Conv2D(self.classes, 5, padding='same')
+		
+	def call(self, x):
+		x = self.conv1(x)
+		x = self.conv2(x)
+		x = self.conv3(x)
 		return x
-	
